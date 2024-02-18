@@ -2,27 +2,35 @@ package ultimatetictactoe;
 
 public class Grid {
 	public enum State {
-	    EMPTY,
-	    PLAYER1,
-	    PLAYER2,
-	    TIED
+		EMPTY, CROSS, CIRCLE, TIED
+	}
+
+	private State state;
+	
+	public static boolean isEmpty(Grid grid) {
+		return grid.getState() == State.EMPTY;
+	}
+
+	public Grid() {
+		state = State.EMPTY;
+	}
+
+	public State getState() {
+		return state;
+	}
+
+	public void setState(State newState) {
+		this.state = newState;
 	}
 	
-    private State state;
-    
-    public static boolean isEmpty(Grid grid) {
-    	return grid.getState() == Grid.State.EMPTY;
-    }
-    
-    public Grid() {
-        state = State.EMPTY;
-    }
-
-    public Grid.State getState() {
-        return state;
-    }
-
-    public void setState(State newState) {
-        this.state = newState;
-    }
+	public static State convertCellState(Cell.State cellState) {
+		switch (cellState) {
+		case CROSS:
+			return State.CROSS;
+		case CIRCLE:
+			return State.CIRCLE;
+		default:
+			return State.EMPTY;
+		}
+	}
 }
