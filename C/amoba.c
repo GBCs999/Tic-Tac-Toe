@@ -2235,7 +2235,7 @@ int check (int win, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int 
             if(m1==1 || m1==2)
                 return m1;
         }
-        if(m4==m5 && m5==m5){
+        if(m4==m5 && m5==m6){
             if(m4==1 || m4==2)
                 return m4;
         }
