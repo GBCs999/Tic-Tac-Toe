@@ -11,7 +11,7 @@ public class Cell extends JButton {
 	public enum State {
 		EMPTY, CROSS, CIRCLE
 	}
-
+	
 	public enum Sign {
 		CROSS("X"), CIRCLE("O");
 

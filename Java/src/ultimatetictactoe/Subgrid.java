@@ -1,17 +1,21 @@
 package ultimatetictactoe;
 
-public class Grid {
+import javax.swing.JButton;
+
+public class Subgrid extends JButton {
+	private static final long serialVersionUID = 1L;
+	
 	public enum State {
 		EMPTY, CROSS, CIRCLE, TIED
 	}
 
 	private State state;
 	
-	public static boolean isEmpty(Grid grid) {
+	public static boolean isEmpty(Subgrid grid) {
 		return grid.getState() == State.EMPTY;
 	}
 
-	public Grid() {
+	public Subgrid() {
 		state = State.EMPTY;
 	}
 

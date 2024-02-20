@@ -34,15 +34,15 @@ public class Game extends JFrame {
 
 	private JLabel roundLabel;
 	private int round = 0;
-
+	
 	private JLabel prevStepLabel;
 	private Step prevStep;
 
 	private JLabel currentSubgridLabel;
 	private Step currentSubgrid;
 
-	private final Cell[][][][] board;
-	private final Grid[][] subgrids;
+	private final Cell[][][][] cells;
+	private final Subgrid[][] subgrids;
 	private final JPanel[][] subgridLayout;
 	private final JPanel boardLayout;
 	
@@ -68,7 +68,7 @@ public class Game extends JFrame {
 		statsPanel.add(currentSectorPanel, BorderLayout.SOUTH);
 
 		JPanel boardPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		board = initBoard();
+		cells = initCells();
 		subgrids = initSubgrids();
 		subgridLayout = new JPanel[GRID_SIZE][GRID_SIZE];
 		boardLayout = createBoardLayout();
@@ -91,10 +91,10 @@ public class Game extends JFrame {
 		label.setFont(new Font("Arial", Font.BOLD, LABEL_FONT_SIZE));
 	}
 
-	private Cell[][][][] initBoard() {
-		Cell[][][][] board = new Cell[GRID_SIZE][GRID_SIZE][GRID_SIZE][GRID_SIZE];
+	private Cell[][][][] initCells() {
+		Cell[][][][] cells = new Cell[GRID_SIZE][GRID_SIZE][GRID_SIZE][GRID_SIZE];
 
-		for (Cell[][][] row3D : board) {
+		for (Cell[][][] row3D : cells) {
 			for (Cell[][] row2D : row3D) {
 				for (Cell[] row1D : row2D) {
 					Arrays.fill(row1D, new Cell());
@@ -102,40 +102,41 @@ public class Game extends JFrame {
 			}
 		}
 
-		return board;
+		return cells;
 	}
 
-	private Grid[][] initSubgrids() {
-		Grid[][] subgrids = new Grid[GRID_SIZE][GRID_SIZE];
+	private Subgrid[][] initSubgrids() {
+		Subgrid[][] subgrids = new Subgrid[GRID_SIZE][GRID_SIZE];
 
-		for (Grid[] grid1D : subgrids) {
-			Arrays.fill(grid1D, new Grid());
+		for (Subgrid[] grid1D : subgrids) {
+			Arrays.fill(grid1D, new Subgrid());
 		}
+		
 		return subgrids;
 	}
 
 	private JPanel createBoardLayout() {
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
+		JPanel board = new JPanel();
+		board.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
 
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
 				JPanel subGrid = createSubGridLayout();
 				createButtons(subGrid, i, j);
-				panel.add(subGrid);
+				board.add(subGrid);
 				subgridLayout[i][j] = subGrid;
 			}
 		}
 
-		return panel;
+		return board;
 	}
 
 	private JPanel createSubGridLayout() {
-		JPanel subGrid = new JPanel();
-		subGrid.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
-		subGrid.setBorder(BorderFactory.createLineBorder(Color.BLACK, THICK_BORDER_WIDTH));
+		JPanel subgrid = new JPanel();
+		subgrid.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
+		subgrid.setBorder(BorderFactory.createLineBorder(Color.BLACK, THICK_BORDER_WIDTH));
 
-		return subGrid;
+		return subgrid;
 	}
 
 	private void createButtons(JPanel subGrid, int subgridRow, int subgridCol) {
@@ -177,7 +178,7 @@ public class Game extends JFrame {
 					}
 				});
 
-				board[subgridRow][subgridCol][row][column] = cell;
+				cells[subgridRow][subgridCol][row][column] = cell;
 				subGrid.add(cell);
 			}
 		}
@@ -185,7 +186,7 @@ public class Game extends JFrame {
 
 	// 
 	private void handleCellClick(Cell cell, int subgridRow, int subgridCol, int row, int col) {
-		if (Grid.isEmpty(subgrids[subgridRow][subgridCol])) {
+		if (Subgrid.isEmpty(subgrids[subgridRow][subgridCol])) {
 			round++;
 			roundLabel.setText("Round: " + (round + 1));
 			updateCellState(cell);
@@ -193,19 +194,19 @@ public class Game extends JFrame {
 			prevStep = new Step(subgridRow, subgridCol, row, col);
 			prevStepLabel.setText("Previous Step: " + formatPrevStep());
 
-			Grid.State localWinner = checkWinner(board[subgridRow][subgridCol]);
+			Subgrid.State localWinner = checkWinner(cells[currentSubgrid.subgridRow][currentSubgrid.subgridCol]);
 
-			if (localWinner != Grid.State.EMPTY) {
-				// subgrids[subgridRow][subgridCol].setState(localWinner);
-				
-				replaceWonSubgrid(localWinner, subgridRow, subgridCol);
+			if (localWinner != Subgrid.State.EMPTY) {
+				Subgrid wonSubgrid = subgrids[currentSubgrid.subgridRow][currentSubgrid.subgridCol];
+				wonSubgrid.setState(localWinner);
+				replaceWonSubgrid(localWinner, currentSubgrid.subgridRow, currentSubgrid.subgridCol);
 				
 				// temporary messages
 				String localWinnerMessage;
 				String localWinnerTitle;
 				String currentSubgrid = formatCurrentSubgrid();
 				
-				if (localWinner == Grid.State.TIED) {
+				if (localWinner == Subgrid.State.TIED) {
 					localWinnerMessage = String.format("%s tied.", currentSubgrid);
 					localWinnerTitle = "Grid tied!";
 				}
@@ -216,8 +217,15 @@ public class Game extends JFrame {
 				
 				JOptionPane.showMessageDialog(this, localWinnerMessage, localWinnerTitle, JOptionPane.INFORMATION_MESSAGE);
 				
-				Grid.State globalWinner = checkWinner(subgrids);
-				if (globalWinner != Grid.State.EMPTY) {
+				// temporary state checker
+				for (int i = 0; i < GRID_SIZE; i++) {
+					for (int j = 0; j < GRID_SIZE; j++) {
+						System.out.println(subgrids[i][j].getState());
+					}
+				}
+				
+				Subgrid.State globalWinner = checkWinner(subgrids);
+				if (globalWinner != Subgrid.State.EMPTY) {
 					endGame(globalWinner);
 				}
 			}
@@ -262,7 +270,7 @@ public class Game extends JFrame {
 	private void toggleSubgrid(boolean isActive, int row, int col) {
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
-				Cell cell = board[row][col][i][j];
+				Cell cell = cells[row][col][i][j];
 
 				if (!isSubgridDisabled(row, col)) {
 					Color cellColor = isActive ? Color.WHITE : Color.LIGHT_GRAY;
@@ -275,7 +283,7 @@ public class Game extends JFrame {
 
 	//
 	private boolean isSubgridDisabled(int row, int col) {
-		return subgrids[row][col].getState() != Grid.State.EMPTY;
+		return subgrids[row][col].getState() != Subgrid.State.EMPTY;
 	}
 
 	//
@@ -286,17 +294,17 @@ public class Game extends JFrame {
 	}
 
 	//
-	private void replaceWonSubgrid(Grid.State winner, int subgridRow, int subgridCol) {
+	private void replaceWonSubgrid(Subgrid.State winner, int subgridRow, int subgridCol) {
 	    JPanel subgrid = subgridLayout[subgridRow][subgridCol];
 	    boardLayout.remove(subgrid);
 
 	    JButton filledSubgrid = new JButton();
-	    filledSubgrid.setEnabled(false);
 	    filledSubgrid.setPreferredSize(new Dimension(LARGE_CELL_SIZE, LARGE_CELL_SIZE));
 	    filledSubgrid.setBackground(Color.WHITE);
 	    filledSubgrid.setFont(new Font("Arial", Font.BOLD, LARGE_CELL_FONT_SIZE));
 	    filledSubgrid.setBorder(BorderFactory.createLineBorder(Color.BLACK, THICK_BORDER_WIDTH));
 	    filledSubgrid.setFocusPainted(false);
+	    filledSubgrid.setContentAreaFilled(false);
 	    
 	    switch (winner) {
         	case CROSS:
@@ -307,6 +315,7 @@ public class Game extends JFrame {
         		break;
         	case TIED:
                 filledSubgrid.setText("-");
+                break;
         	default:
         		break;
 	    }
@@ -319,12 +328,12 @@ public class Game extends JFrame {
 
 
 	// Check winning conditions for the a single grid
-	private <T> Grid.State checkWinner(T[][] grid) {
+	private <T> Subgrid.State checkWinner(T[][] grid) {
 		// Check horizontal lines
 		for (int row = 0; row < GRID_SIZE; row++) {
 			if (checkLine(grid[row][0], grid[row][1], grid[row][2])) {
 				if (grid[row][0] instanceof Cell) {
-					return Grid.convertCellState(castToCell(grid[row][0]).getState());
+					return Subgrid.convertCellState(castToCell(grid[row][0]).getState());
 				}
 
 				return castToGrid(grid[row][0]).getState();
@@ -335,7 +344,7 @@ public class Game extends JFrame {
 		for (int col = 0; col < GRID_SIZE; col++) {
 			if (checkLine(grid[0][col], grid[1][col], grid[2][col])) {
 				if (grid[0][col] instanceof Cell) {
-					return Grid.convertCellState(castToCell(grid[0][col]).getState());
+					return Subgrid.convertCellState(castToCell(grid[0][col]).getState());
 				}
 
 				return castToGrid(grid[0][col]).getState();
@@ -345,7 +354,7 @@ public class Game extends JFrame {
 		// Check diagonal lines
 		if (checkLine(grid[0][0], grid[1][1], grid[2][2]) || checkLine(grid[0][2], grid[1][1], grid[2][0])) {
 			if (grid[1][1] instanceof Cell) {
-				return Grid.convertCellState(castToCell(grid[1][1]).getState());
+				return Subgrid.convertCellState(castToCell(grid[1][1]).getState());
 			}
 
 			return castToGrid(grid[1][1]).getState();
@@ -353,17 +362,17 @@ public class Game extends JFrame {
 
 		// Check for tie
 		if (isGameTied(grid)) {
-			return Grid.State.TIED;
+			return Subgrid.State.TIED;
 		}
 
 		// If no winner and no tie, return EMPTY
-		return Grid.State.EMPTY;
+		return Subgrid.State.EMPTY;
 	}
 
 	// Check if a line (row, column, or diagonal) has the same states
 	private <T> boolean checkLine(T cell1, T cell2, T cell3) {
 		// We need to check if the state of the cells are empty or not
-		if (cell1 instanceof Cell && cell2 instanceof Cell && cell3 instanceof Cell) {
+		if (cell1 instanceof Cell) {
 			Cell.State state1 = castToCell(cell1).getState();
 			Cell.State state2 = castToCell(cell2).getState();
 			Cell.State state3 = castToCell(cell3).getState();
@@ -371,11 +380,11 @@ public class Game extends JFrame {
 			return state1 != Cell.State.EMPTY && state1 == state2 && state2 == state3;
 		}
 		else {
-			Grid.State state1 = castToGrid(cell1).getState();
-			Grid.State state2 = castToGrid(cell2).getState();
-			Grid.State state3 = castToGrid(cell3).getState();
+			Subgrid.State state1 = castToGrid(cell1).getState();
+			Subgrid.State state2 = castToGrid(cell2).getState();
+			Subgrid.State state3 = castToGrid(cell3).getState();
 			
-			return state1 != Grid.State.EMPTY && state1 == state2 && state2 == state3;
+			return state1 != Subgrid.State.EMPTY && state1 == state2 && state2 == state3;
 		}
 	}
 
@@ -383,8 +392,8 @@ public class Game extends JFrame {
 		return (Cell) element;
 	}
 
-	private <T> Grid castToGrid(T element) {
-		return (Grid) element;
+	private <T> Subgrid castToGrid(T element) {
+		return (Subgrid) element;
 	}
 
 	// Check if the game is tied for a grid (either local or global)
@@ -398,7 +407,7 @@ public class Game extends JFrame {
 					}
 				}
 				else {
-					if (castToGrid(grid[i][j]).getState() == Grid.State.EMPTY) {
+					if (castToGrid(grid[i][j]).getState() == Subgrid.State.EMPTY) {
 						return false; // If any subgrid is empty, game is not tied
 					}
 				}
@@ -409,10 +418,10 @@ public class Game extends JFrame {
 		return true;
 	}
 	
-	private void endGame(Grid.State winner) {
+	private void endGame(Subgrid.State winner) {
 		String message;
 
-		if (winner == Grid.State.TIED) {
+		if (winner == Subgrid.State.TIED) {
 			message = "It's a tie!";
 		}
 		else {
