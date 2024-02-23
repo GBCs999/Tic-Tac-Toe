@@ -1,445 +1,154 @@
 package ultimatetictactoe;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.Arrays;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+/**
+ * Represents the main class for the Ultimate Tic-Tac-Toe game.
+ */
 public class Game extends JFrame {
 	private static final long serialVersionUID = 1L;
-	private static final int GRID_SIZE = 3;
+	private static final String LABEL_FONT = "Arial";
 	private static final int LABEL_FONT_SIZE = 24;
-	private static final int THIN_BORDER_WIDTH = 1;
-	private static final int THICK_BORDER_WIDTH = 2;
-	private static final int SMALL_CELL_SIZE = 50;
-	private static final int LARGE_CELL_SIZE = 150;
-	private static final int SMALL_CELL_FONT_SIZE = 30;
-	private static final int LARGE_CELL_FONT_SIZE = 90;
-
-	private JLabel roundLabel;
-	private int round = 0;
+	public static final int GRID_SIZE = 3;
 	
-	private JLabel prevStepLabel;
-	private Step prevStep;
-
-	private JLabel currentSubgridLabel;
-	private Step currentSubgrid;
-
-	private final Cell[][][][] cells;
-	private final Subgrid[][] subgrids;
-	private final JPanel[][] subgridLayout;
-	private final JPanel boardLayout;
+	public static Grid grid = new Grid();
 	
+	public static int round = 0;
+	public static JLabel roundLabel = new JLabel("Round: " + (round + 1));
+	
+	public static Step prevStep;
+	public static JLabel prevStepLabel = new JLabel("Previous Step: None");
+	
+	public static Step currentStep;
+	
+	public static JLabel currentPlayerLabel = new JLabel("Current Player: X");
+	
+	private static JPanel gridPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+	private Container pane = getContentPane();
+	
+	/**
+     * Constructs a new instance of the Game class, initializing the game UI.
+     */
 	public Game() {
-		JPanel roundPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		roundLabel = new JLabel("Round: " + (round + 1));
-		setBaseFont(roundLabel);
-		roundPanel.add(roundLabel);
-
-		JPanel prevStepPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		prevStepLabel = new JLabel("Previous Step: None");
-		setBaseFont(prevStepLabel);
-		prevStepPanel.add(prevStepLabel);
-
-		JPanel currentSectorPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		currentSubgridLabel = new JLabel("Current Step: All");
-		setBaseFont(currentSubgridLabel);
-		currentSectorPanel.add(currentSubgridLabel);
-
+		JPanel roundPanel = createStatLabel(roundLabel);
+		JPanel prevStepPanel = createStatLabel(prevStepLabel);
+		JPanel currentPlayerPanel = createStatLabel(currentPlayerLabel);
+		
 		JPanel statsPanel = new JPanel(new BorderLayout());
 		statsPanel.add(roundPanel, BorderLayout.NORTH);
 		statsPanel.add(prevStepPanel, BorderLayout.CENTER);
-		statsPanel.add(currentSectorPanel, BorderLayout.SOUTH);
+		statsPanel.add(currentPlayerPanel, BorderLayout.SOUTH);
+		
+		gridPanel.add(grid);
 
-		JPanel boardPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		cells = initCells();
-		subgrids = initSubgrids();
-		subgridLayout = new JPanel[GRID_SIZE][GRID_SIZE];
-		boardLayout = createBoardLayout();
-		boardPanel.add(boardLayout);
-
-		Container pane = getContentPane();
 		pane.setLayout(new BorderLayout());
 		pane.add(statsPanel, BorderLayout.NORTH);
-		pane.add(boardPanel, BorderLayout.CENTER);
-
-		currentSubgrid = new Step(0, 0, 0, 0);
+		pane.add(gridPanel, BorderLayout.CENTER);
 
 		setTitle("Ultimate Tic-Tac-Toe");
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 	}
-
-	private void setBaseFont(JLabel label) {
-		label.setFont(new Font("Arial", Font.BOLD, LABEL_FONT_SIZE));
-	}
-
-	private Cell[][][][] initCells() {
-		Cell[][][][] cells = new Cell[GRID_SIZE][GRID_SIZE][GRID_SIZE][GRID_SIZE];
-
-		for (Cell[][][] row3D : cells) {
-			for (Cell[][] row2D : row3D) {
-				for (Cell[] row1D : row2D) {
-					Arrays.fill(row1D, new Cell());
-				}
-			}
-		}
-
-		return cells;
-	}
-
-	private Subgrid[][] initSubgrids() {
-		Subgrid[][] subgrids = new Subgrid[GRID_SIZE][GRID_SIZE];
-
-		for (Subgrid[] grid1D : subgrids) {
-			Arrays.fill(grid1D, new Subgrid());
-		}
+	
+	private JPanel createStatLabel(JLabel label) {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		setBaseFont(label);
+		panel.add(label);
 		
-		return subgrids;
-	}
-
-	private JPanel createBoardLayout() {
-		JPanel board = new JPanel();
-		board.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
-
-		for (int i = 0; i < GRID_SIZE; i++) {
-			for (int j = 0; j < GRID_SIZE; j++) {
-				JPanel subGrid = createSubGridLayout();
-				createButtons(subGrid, i, j);
-				board.add(subGrid);
-				subgridLayout[i][j] = subGrid;
-			}
-		}
-
-		return board;
-	}
-
-	private JPanel createSubGridLayout() {
-		JPanel subgrid = new JPanel();
-		subgrid.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
-		subgrid.setBorder(BorderFactory.createLineBorder(Color.BLACK, THICK_BORDER_WIDTH));
-
-		return subgrid;
-	}
-
-	private void createButtons(JPanel subGrid, int subgridRow, int subgridCol) {
-		for (int i = 0; i < GRID_SIZE; i++) {
-			final int row = i;
-
-			for (int j = 0; j < GRID_SIZE; j++) {
-				final int column = j;
-
-				Cell cell = new Cell();
-				cell.setPreferredSize(new Dimension(SMALL_CELL_SIZE, SMALL_CELL_SIZE));
-				cell.setBackground(Color.WHITE);
-				cell.setFont(new Font("Arial", Font.BOLD, SMALL_CELL_FONT_SIZE));
-				cell.setBorder(BorderFactory.createLineBorder(Color.BLACK, THIN_BORDER_WIDTH));
-				cell.setFocusPainted(false);
-				
-				cell.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseEntered(MouseEvent e) {
-						if (cell.isEnabled()) {
-							cell.setBackground(Color.LIGHT_GRAY);
-						}
-					}
-
-					@Override
-					public void mouseExited(MouseEvent e) {
-						if (cell.isEnabled()) {
-							cell.setBackground(Color.WHITE);
-						}
-					}
-				});
-
-				cell.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						if (cell.getState() == Cell.State.EMPTY) {
-							handleCellClick(cell, subgridRow, subgridCol, row, column);
-						}
-					}
-				});
-
-				cells[subgridRow][subgridCol][row][column] = cell;
-				subGrid.add(cell);
-			}
-		}
-	}
-
-	// 
-	private void handleCellClick(Cell cell, int subgridRow, int subgridCol, int row, int col) {
-		if (Subgrid.isEmpty(subgrids[subgridRow][subgridCol])) {
-			round++;
-			roundLabel.setText("Round: " + (round + 1));
-			updateCellState(cell);
-			
-			prevStep = new Step(subgridRow, subgridCol, row, col);
-			prevStepLabel.setText("Previous Step: " + formatPrevStep());
-
-			Subgrid.State localWinner = checkWinner(cells[currentSubgrid.subgridRow][currentSubgrid.subgridCol]);
-
-			if (localWinner != Subgrid.State.EMPTY) {
-				Subgrid wonSubgrid = subgrids[currentSubgrid.subgridRow][currentSubgrid.subgridCol];
-				wonSubgrid.setState(localWinner);
-				replaceWonSubgrid(localWinner, currentSubgrid.subgridRow, currentSubgrid.subgridCol);
-				
-				// temporary messages
-				String localWinnerMessage;
-				String localWinnerTitle;
-				String currentSubgrid = formatCurrentSubgrid();
-				
-				if (localWinner == Subgrid.State.TIED) {
-					localWinnerMessage = String.format("%s tied.", currentSubgrid);
-					localWinnerTitle = "Grid tied!";
-				}
-				else {
-					localWinnerMessage = String.format("%s won by %s.", currentSubgrid, localWinner);
-					localWinnerTitle = "Grid won!";
-				}
-				
-				JOptionPane.showMessageDialog(this, localWinnerMessage, localWinnerTitle, JOptionPane.INFORMATION_MESSAGE);
-				
-				// temporary state checker
-				for (int i = 0; i < GRID_SIZE; i++) {
-					for (int j = 0; j < GRID_SIZE; j++) {
-						System.out.println(subgrids[i][j].getState());
-					}
-				}
-				
-				Subgrid.State globalWinner = checkWinner(subgrids);
-				if (globalWinner != Subgrid.State.EMPTY) {
-					endGame(globalWinner);
-				}
-			}
-			
-			// Enable the subgrid of subgridRow and subgridCol based on prevStep's row and col
-			for (int i = 0; i < GRID_SIZE; i++) {
-				for (int j = 0; j < GRID_SIZE; j++) {
-					if (i == prevStep.row && j == prevStep.col) {
-						currentSubgrid = new Step(i, j);
-						toggleSubgrid(true, i, j);
-					}
-					else {
-						toggleSubgrid(false, i, j);
-					}
-				}
-			}
-						
-			currentSubgridLabel.setText("Current Step: " + formatCurrentSubgrid());
-		}
+		return panel;
 	}
 	
-	//
-	private void updateCellState(Cell cell) {
-		boolean isEven = round % 2 == 0;
-		Cell.State state = cell.getTurnState(isEven);
-		Cell.Sign sign = cell.getTurnSign(isEven);
-		cell.setState(state);
-		cell.setSign(sign);
-		
-		cell.setText(cell.getSign());
+	/**
+     * Sets the base font for a JLabel.
+     * 
+     * @param label The JLabel to set the font for.
+     */
+	private void setBaseFont(JLabel label) {
+		label.setFont(new Font(LABEL_FONT, Font.BOLD, LABEL_FONT_SIZE));
 	}
+	
+	/**
+     * Displays the end game message dialog.
+     * 
+     * @param parentComponent The parent component for the dialog.
+     * @param winner The winner of the game.
+     */
+	public static void endGame(Component parentComponent, Grid.State winner) {
+	    String message;
 
-	//
-	private String formatPrevStep() {
-		int sector = prevStep.subgridRow * GRID_SIZE + prevStep.subgridCol + 1;
-		int cell = prevStep.row * GRID_SIZE + prevStep.col + 1;
+	    if (winner == Grid.State.TIED) {
+	        message = "It's a tie!";
+	    }
+	    else {
+	        message = String.format(winner + " wins!");
+	    }
 
-		return String.format("Grid %d, Cell %d", sector, cell);
+	    Object[] options = {"New Game", "Exit"};
+	    int choice = JOptionPane.showOptionDialog(
+	    		parentComponent,
+	    		message,
+	    		"Game Over",
+	    		JOptionPane.YES_NO_OPTION,
+	    		JOptionPane.INFORMATION_MESSAGE,
+	    		null,
+	    		options,
+	    		options[0]
+	    );
+
+	    if (choice == JOptionPane.YES_OPTION) {
+	        resetGame();
+	    }
+	    else {
+	        System.exit(0); // Exit the application
+	    }
 	}
-
-	//
-	private void toggleSubgrid(boolean isActive, int row, int col) {
-		for (int i = 0; i < GRID_SIZE; i++) {
-			for (int j = 0; j < GRID_SIZE; j++) {
-				Cell cell = cells[row][col][i][j];
-
-				if (!isSubgridDisabled(row, col)) {
-					Color cellColor = isActive ? Color.WHITE : Color.LIGHT_GRAY;
-					cell.setEnabled(isActive);
-					cell.setBackground(cellColor);
-				}
-			}
-		}
-	}
-
-	//
-	private boolean isSubgridDisabled(int row, int col) {
-		return subgrids[row][col].getState() != Subgrid.State.EMPTY;
-	}
-
-	//
-	private String formatCurrentSubgrid() {
-		int subgrid = currentSubgrid.subgridRow * GRID_SIZE + currentSubgrid.subgridCol + 1;
-		
-		return "Grid " + Integer.toString(subgrid);
-	}
-
-	//
-	private void replaceWonSubgrid(Subgrid.State winner, int subgridRow, int subgridCol) {
-	    JPanel subgrid = subgridLayout[subgridRow][subgridCol];
-	    boardLayout.remove(subgrid);
-
-	    JButton filledSubgrid = new JButton();
-	    filledSubgrid.setPreferredSize(new Dimension(LARGE_CELL_SIZE, LARGE_CELL_SIZE));
-	    filledSubgrid.setBackground(Color.WHITE);
-	    filledSubgrid.setFont(new Font("Arial", Font.BOLD, LARGE_CELL_FONT_SIZE));
-	    filledSubgrid.setBorder(BorderFactory.createLineBorder(Color.BLACK, THICK_BORDER_WIDTH));
-	    filledSubgrid.setFocusPainted(false);
-	    filledSubgrid.setContentAreaFilled(false);
+	
+	/**
+	 * Resets the game to its initial state.
+	 */
+	public static void resetGame() {
+	    round = 0;
+	    roundLabel.setText("Round: " + (round + 1));
+	    prevStep = new Step(0, 0, 0, 0);
+	    prevStepLabel.setText("Previous Step: None");
+	    currentStep = new Step(0, 0);
+	    currentPlayerLabel.setText("Current Player: X");
+	    gridPanel.removeAll();
+	    gridPanel.revalidate();
+	    gridPanel.repaint();
+	    grid = new Grid();
 	    
-	    switch (winner) {
-        	case CROSS:
-        		filledSubgrid.setText(Cell.Sign.CROSS.get());
-        		break;
-        	case CIRCLE:
-        		filledSubgrid.setText(Cell.Sign.CIRCLE.get());
-        		break;
-        	case TIED:
-                filledSubgrid.setText("-");
-                break;
-        	default:
-        		break;
+	    // TODO: Fix cell coloring issue 
+	    for (int i = 0; i < GRID_SIZE; i++) {
+	        for (int j = 0; j < GRID_SIZE; j++) {
+	            Subgrid subgrid = grid.getSubgrid(i, j);
+	            subgrid.setState(Subgrid.State.EMPTY);
+	            subgrid.toggleSubgrid(true);
+	        }
 	    }
 	    
-	    // Add the button back at the specified indexes
-	    boardLayout.add(filledSubgrid, subgridRow * GRID_SIZE + subgridCol);
-	    boardLayout.revalidate();
-	    boardLayout.repaint();
+	    gridPanel.add(grid);
+	    gridPanel.revalidate();
+	    gridPanel.repaint();
 	}
 
-
-	// Check winning conditions for the a single grid
-	private <T> Subgrid.State checkWinner(T[][] grid) {
-		// Check horizontal lines
-		for (int row = 0; row < GRID_SIZE; row++) {
-			if (checkLine(grid[row][0], grid[row][1], grid[row][2])) {
-				if (grid[row][0] instanceof Cell) {
-					return Subgrid.convertCellState(castToCell(grid[row][0]).getState());
-				}
-
-				return castToGrid(grid[row][0]).getState();
-			}
-		}
-
-		// Check vertical lines
-		for (int col = 0; col < GRID_SIZE; col++) {
-			if (checkLine(grid[0][col], grid[1][col], grid[2][col])) {
-				if (grid[0][col] instanceof Cell) {
-					return Subgrid.convertCellState(castToCell(grid[0][col]).getState());
-				}
-
-				return castToGrid(grid[0][col]).getState();
-			}
-		}
-
-		// Check diagonal lines
-		if (checkLine(grid[0][0], grid[1][1], grid[2][2]) || checkLine(grid[0][2], grid[1][1], grid[2][0])) {
-			if (grid[1][1] instanceof Cell) {
-				return Subgrid.convertCellState(castToCell(grid[1][1]).getState());
-			}
-
-			return castToGrid(grid[1][1]).getState();
-		}
-
-		// Check for tie
-		if (isGameTied(grid)) {
-			return Subgrid.State.TIED;
-		}
-
-		// If no winner and no tie, return EMPTY
-		return Subgrid.State.EMPTY;
-	}
-
-	// Check if a line (row, column, or diagonal) has the same states
-	private <T> boolean checkLine(T cell1, T cell2, T cell3) {
-		// We need to check if the state of the cells are empty or not
-		if (cell1 instanceof Cell) {
-			Cell.State state1 = castToCell(cell1).getState();
-			Cell.State state2 = castToCell(cell2).getState();
-			Cell.State state3 = castToCell(cell3).getState();
-			
-			return state1 != Cell.State.EMPTY && state1 == state2 && state2 == state3;
-		}
-		else {
-			Subgrid.State state1 = castToGrid(cell1).getState();
-			Subgrid.State state2 = castToGrid(cell2).getState();
-			Subgrid.State state3 = castToGrid(cell3).getState();
-			
-			return state1 != Subgrid.State.EMPTY && state1 == state2 && state2 == state3;
-		}
-	}
-
-	private <T> Cell castToCell(T element) {
-		return (Cell) element;
-	}
-
-	private <T> Subgrid castToGrid(T element) {
-		return (Subgrid) element;
-	}
-
-	// Check if the game is tied for a grid (either local or global)
-	private <T> boolean isGameTied(T[][] grid) {
-		// Check if all cells are filled and there is no winner
-		for (int i = 0; i < GRID_SIZE; i++) {
-			for (int j = 0; j < GRID_SIZE; j++) {
-				if (grid[i][j] instanceof Cell) {
-					if (castToCell(grid[i][j]).getState() == Cell.State.EMPTY) {
-						return false; // If any cell is empty, game is not tied
-					}
-				}
-				else {
-					if (castToGrid(grid[i][j]).getState() == Subgrid.State.EMPTY) {
-						return false; // If any subgrid is empty, game is not tied
-					}
-				}
-			}
-		}
-
-		// If all cells are filled and there is no winner, then game is tied
-		return true;
-	}
 	
-	private void endGame(Subgrid.State winner) {
-		String message;
-
-		if (winner == Subgrid.State.TIED) {
-			message = "It's a tie!";
-		}
-		else {
-			message = String.format(winner + " wins!");
-		}
-
-		JOptionPane.showMessageDialog(this, message, "Game Over", JOptionPane.INFORMATION_MESSAGE);
-
-		// resetGame();
-	}
-
 	/**
-	 * The rule remaining implementation:
-	 * 
-	 * If a sector is won then no more moves can be made there Meaning that if a
-	 * player is sent to that sector they can make a move in free sectors with EMPTY
-	 * states
-	 */
+     * Main method to start the application.
+     * 
+     * @param args The command line arguments.
+     */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> new Game());
 	}
