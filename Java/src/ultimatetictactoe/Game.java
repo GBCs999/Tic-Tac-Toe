@@ -1,7 +1,6 @@
 package ultimatetictactoe;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -34,7 +33,7 @@ public class Game extends JFrame {
 	public static JLabel currentPlayerLabel = new JLabel("Current Player: X");
 	
 	private static JPanel gridPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-	private Container pane = getContentPane();
+	public Container pane = getContentPane();
 	
 	/**
      * Constructs a new instance of the Game class, initializing the game UI.
@@ -81,10 +80,9 @@ public class Game extends JFrame {
 	/**
      * Displays the end game message dialog.
      * 
-     * @param parentComponent The parent component for the dialog.
      * @param winner The winner of the game.
      */
-	public static void endGame(Component parentComponent, Grid.State winner) {
+	public static void endGame(Grid.State winner) {
 	    String message;
 
 	    if (winner == Grid.State.TIED) {
@@ -94,9 +92,9 @@ public class Game extends JFrame {
 	        message = String.format(winner + " wins!");
 	    }
 
-	    Object[] options = {"New Game", "Exit"};
+	    Object[] options = { "New Game", "Exit" };
 	    int choice = JOptionPane.showOptionDialog(
-	    		parentComponent,
+	    		null,
 	    		message,
 	    		"Game Over",
 	    		JOptionPane.YES_NO_OPTION,
@@ -120,23 +118,19 @@ public class Game extends JFrame {
 	public static void resetGame() {
 	    round = 0;
 	    roundLabel.setText("Round: " + (round + 1));
-	    prevStep = new Step(0, 0, 0, 0);
-	    prevStepLabel.setText("Previous Step: None");
-	    currentStep = new Step(0, 0);
-	    currentPlayerLabel.setText("Current Player: X");
-	    gridPanel.removeAll();
-	    gridPanel.revalidate();
-	    gridPanel.repaint();
-	    grid = new Grid();
 	    
-	    // TODO: Fix cell coloring issue 
-	    for (int i = 0; i < GRID_SIZE; i++) {
-	        for (int j = 0; j < GRID_SIZE; j++) {
-	            Subgrid subgrid = grid.getSubgrid(i, j);
-	            subgrid.setState(Subgrid.State.EMPTY);
-	            subgrid.toggleSubgrid(true);
-	        }
-	    }
+	    /**
+	     * TODO: prevStep works with a NullPointerException, find a fix later.
+	     * If changed to something like new Step(-1, -1), the first subgrid gets enabled and all others get disabled.
+	     */
+	    prevStep = null; 
+	    
+	    prevStepLabel.setText("Previous Step: None");
+	    currentStep = null;
+	    currentPlayerLabel.setText("Current Player: X");
+	    gridPanel.remove(grid);
+	    
+	    grid = new Grid();
 	    
 	    gridPanel.add(grid);
 	    gridPanel.revalidate();

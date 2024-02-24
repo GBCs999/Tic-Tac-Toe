@@ -20,6 +20,9 @@ public class Grid extends JPanel {
 		}
 	};
 	
+	/**
+	 * The possible states of a grid.
+	 */
 	public enum State {
 		EMPTY, CROSS, CIRCLE, TIED
 	}
@@ -46,7 +49,7 @@ public class Grid extends JPanel {
 	/**
      * Enables all subgrids in the grid when a step is made into a disabled subgrid.
      */
-	public static void enableAllSubgrids() {
+	public void enableAllSubgrids() {
 	    for (int i = 0; i < Game.GRID_SIZE; i++) {
 	        for (int j = 0; j < Game.GRID_SIZE; j++) {
 	        	subgrids[i][j].toggleSubgrid(true);
@@ -75,7 +78,8 @@ public class Grid extends JPanel {
 		}
 
 		// Check diagonal lines
-		if (checkLine(subgrids[0][0], subgrids[1][1], subgrids[2][2]) || checkLine(subgrids[0][2], subgrids[1][1], subgrids[2][0])) {
+		if (checkLine(subgrids[0][0], subgrids[1][1], subgrids[2][2]) ||
+			checkLine(subgrids[0][2], subgrids[1][1], subgrids[2][0])) {
 			return STATE_MAP.get(subgrids[1][1].getState());
 		}
 

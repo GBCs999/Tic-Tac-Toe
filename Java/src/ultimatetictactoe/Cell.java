@@ -23,10 +23,16 @@ public class Cell extends JButton {
 	public int row;
 	public int col;
 	
+	/**
+	 * Represents the possible states of a cell.
+	 */
 	public enum State {
 		EMPTY, CROSS, CIRCLE
 	}
 	
+	/**
+	 * Represents the possible signs (X and O) for the cell.
+	 */
 	public enum Sign {
 		CROSS("X"), CIRCLE("O");
 
@@ -35,7 +41,7 @@ public class Cell extends JButton {
 		Sign(String sign) {
 			this.sign = sign;
 		}
-
+		
 		public String get() {
 			return sign;
 		}
@@ -51,9 +57,9 @@ public class Cell extends JButton {
      * @param col The column index of the cell.
      */
 	public Cell(int row, int col) {
-		state = State.EMPTY;
 		this.row = row;
 		this.col = col;
+		this.state = State.EMPTY;
 		
 		setCellStyle(SIZE, FONT_SIZE, BORDER_WIDTH);
 		
@@ -119,9 +125,9 @@ public class Cell extends JButton {
      * Updates the state and sign of the cell based on the current turn.
      */
 	private void updateCellState() {
-		boolean isEvenRound = Game.round % 2 == 0;
-		state = determineCellState(isEvenRound);
-		sign = determineCellSign(isEvenRound);
+		boolean isTurnEven = Game.round % 2 == 0;
+		state = determineCellState(isTurnEven);
+		sign = determineCellSign(isTurnEven);
 		setText(getSign());
 	}
 	
@@ -140,8 +146,8 @@ public class Cell extends JButton {
 			Game.prevStepLabel.setText("Previous Step: " + Game.prevStep.formatPrevStep());
 			
 			// Get the next turn's sign
-			boolean isEvenRound = (Game.round + 1) % 2 == 0;
-			Sign currentPlayerSign = determineCellSign(isEvenRound);
+			boolean isNextTurnEven = (Game.round + 1) % 2 == 0;
+			Sign currentPlayerSign = determineCellSign(isNextTurnEven);
 			Game.currentPlayerLabel.setText("Current Player: " + currentPlayerSign.get());
 			
 			Subgrid.State localWinner = currentSubgrid.checkWinner();
@@ -153,7 +159,7 @@ public class Cell extends JButton {
 				Grid.State globalWinner = Game.grid.checkWinner();
 				
 				if (globalWinner != Grid.State.EMPTY) {
-					Game.endGame(this, globalWinner);
+					Game.endGame(globalWinner);
 				}
 			}
 			
@@ -167,7 +173,7 @@ public class Cell extends JButton {
 						
 						// Check if a step is made into a played subgrid
 						if (subgrid.isPlayed()) {
-							Grid.enableAllSubgrids();
+							Game.grid.enableAllSubgrids();
 							return;
 						}
 						else {

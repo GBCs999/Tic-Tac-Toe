@@ -24,6 +24,9 @@ public class Subgrid extends JPanel {
 		}
 	};
 	
+	/**
+	 * The possible states of a subgrid.
+	 */
 	public enum State {
 		EMPTY, CROSS, CIRCLE, TIED
 	}
@@ -40,10 +43,10 @@ public class Subgrid extends JPanel {
 	 * @param col The column index of the subgrid.
 	 */
 	public Subgrid(int row, int col) {
-		state = State.EMPTY;
-		cells = new Cell[Game.GRID_SIZE][Game.GRID_SIZE];
 		this.row = row;
 		this.col = col;
+		this.state = State.EMPTY;
+		this.cells = new Cell[Game.GRID_SIZE][Game.GRID_SIZE];
 		
 		setLayout(new GridLayout(Game.GRID_SIZE, Game.GRID_SIZE));
 		setBorder(BorderFactory.createLineBorder(Color.BLACK, BORDER_WIDTH));
@@ -52,6 +55,8 @@ public class Subgrid extends JPanel {
             for (int j = 0; j < Game.GRID_SIZE; j++) {
                 cells[i][j] = new Cell(i, j);
                 add(cells[i][j]);
+                cells[i][j].setEnabled(true);
+                cells[i][j].setBackground(Color.white);
             }
         }
 	}
