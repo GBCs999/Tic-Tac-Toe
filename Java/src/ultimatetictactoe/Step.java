@@ -1,10 +1,10 @@
 package ultimatetictactoe;
 
 public class Step {
-	public int subgridRow;
-	public int subgridCol;
-	public int row;
-	public int col;
+	private int subgridRow;
+	private int subgridCol;
+	private int row;
+	private int col;
 	
 	/**
      * Constructs a new instance of the Step class with specified coordinates.
@@ -14,9 +14,9 @@ public class Step {
      * @param row The row index of the cell.
      * @param col The column index of the cell.
      */
-	public Step(int sectorRow, int sectorCol, int row, int col) {
-		this.subgridRow = sectorRow;
-		this.subgridCol = sectorCol;
+	public Step(int subgridRow, int subgridCol, int row, int col) {
+		this.subgridRow = subgridRow;
+		this.subgridCol = subgridCol;
 		this.row = row;
 		this.col = col;
 	}
@@ -30,6 +30,38 @@ public class Step {
 	public Step(int subgridRow, int subgridCol) {
 		this.subgridRow = subgridRow;
 		this.subgridCol = subgridCol;
+	}
+	
+	public int getSubgridRow() {
+		return subgridRow;
+	}
+	
+	public void setSubgridRow(int subgridRow) {
+		this.subgridRow = subgridRow;
+	}
+	
+	public int getSubgridCol() {
+		return subgridCol;
+	}
+	
+	public void setSubgridCol(int subgridCol) {
+		this.subgridCol = subgridCol;
+	}
+	
+	public int getRow() {
+		return row;
+	}
+	
+	public void setRow(int row) {
+		this.row = row;
+	}
+	
+	public int getCol() {
+		return col;
+	}
+	
+	public void setCol(int col) {
+		this.col = col;
 	}
 	
 	/**

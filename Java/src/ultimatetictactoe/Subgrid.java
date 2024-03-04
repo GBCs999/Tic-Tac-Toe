@@ -15,13 +15,23 @@ public class Subgrid extends JPanel {
 	private static final int SIZE = 150;
 	private static final int FONT_SIZE = 90;
 	private static final int BORDER_WIDTH = 2;
-	private static final EnumMap<Cell.State, State> STATE_MAP = new EnumMap<>(Cell.State.class) {
+	private static final EnumMap<Cell.State, Subgrid.State> STATE_MAP = new EnumMap<>(Cell.State.class) {
 		private static final long serialVersionUID = 1L;
 		{
-			put(Cell.State.CROSS, State.CROSS);
-		    put(Cell.State.CIRCLE, State.CIRCLE);
-		    put(Cell.State.EMPTY, State.EMPTY);
+			put(Cell.State.CROSS, Subgrid.State.CROSS);
+		    put(Cell.State.CIRCLE, Subgrid.State.CIRCLE);
+		    put(Cell.State.EMPTY, Subgrid.State.EMPTY);
 		}
+	};
+	
+	private static final String DRAW_SIGN = "-";
+	private static final EnumMap<Subgrid.State, String> STATE_SIGN_MAP = new EnumMap<>(Subgrid.State.class) {
+	    private static final long serialVersionUID = 1L;
+	    {
+	        put(Subgrid.State.CROSS, Cell.Sign.CROSS.get());
+	        put(Subgrid.State.CIRCLE, Cell.Sign.CIRCLE.get());
+	        put(Subgrid.State.TIED, DRAW_SIGN);
+	    }
 	};
 	
 	/**
@@ -31,10 +41,10 @@ public class Subgrid extends JPanel {
 		EMPTY, CROSS, CIRCLE, TIED
 	}
 	
-	public int row;
-	public int col;
 	private State state;
 	private Cell[][] cells;
+	private int row;
+	private int col;
 	
 	/**
 	 * Initializes the subgrid with the specified row and column indices, and fills it with cells.
@@ -73,6 +83,22 @@ public class Subgrid extends JPanel {
 		state = newState;
 	}
 	
+	public int getRow() {
+		return row;
+	}
+	
+	public void setRow(int row) {
+		this.row = row;
+	}
+	
+	public int getCol() {
+		return col;
+	}
+	
+	public void setCol(int col) {
+		this.col = col;
+	}
+	
 	public boolean isEmpty() {
 		return state == State.EMPTY;
 	}
@@ -109,20 +135,7 @@ public class Subgrid extends JPanel {
 	    filledSubgrid.setCellStyle(Subgrid.SIZE, Subgrid.FONT_SIZE, Subgrid.BORDER_WIDTH);
 	    filledSubgrid.setContentAreaFilled(false);
 	    filledSubgrid.setEnabled(false);
-	    
-	    switch (winner) {
-        	case CROSS:
-        		filledSubgrid.setText(Cell.Sign.CROSS.get());
-        		break;
-        	case CIRCLE:
-        		filledSubgrid.setText(Cell.Sign.CIRCLE.get());
-        		break;
-        	case TIED:
-                filledSubgrid.setText("-");
-                break;
-        	default:
-        		break;
-	    }
+	    filledSubgrid.setText(STATE_SIGN_MAP.get(winner));
 	    
 	    // Add the button back at the specified indexes
 	    Game.grid.add(filledSubgrid, row * Game.GRID_SIZE + col);
@@ -138,20 +151,21 @@ public class Subgrid extends JPanel {
 	public State checkWinner() {
 		// Check horizontal lines
 		for (int row = 0; row < Game.GRID_SIZE; row++) {
-			if (checkLine(cells[row][0], cells[row][1], cells[row][2])) {
+			if (isLineWon(cells[row][0], cells[row][1], cells[row][2])) {
 				return STATE_MAP.get(cells[row][0].getState());
 			}
 		}
 		
 		// Check vertical lines
 		for (int col = 0; col < Game.GRID_SIZE; col++) {
-			if (checkLine(cells[0][col], cells[1][col], cells[2][col])) {
+			if (isLineWon(cells[0][col], cells[1][col], cells[2][col])) {
 				return STATE_MAP.get(cells[0][col].getState());
 			}
 		}
 
 		// Check diagonal lines
-		if (checkLine(cells[0][0], cells[1][1], cells[2][2]) || checkLine(cells[0][2], cells[1][1], cells[2][0])) {
+		if (isLineWon(cells[0][0], cells[1][1], cells[2][2]) ||
+			isLineWon(cells[0][2], cells[1][1], cells[2][0])) {
 			return STATE_MAP.get(cells[1][1].getState());
 		}
 
@@ -172,7 +186,7 @@ public class Subgrid extends JPanel {
 	 * @param cell3
 	 * @return If neither states are empty, and all 3 are the same.
 	 */
-	private boolean checkLine(Cell cell1, Cell cell2, Cell cell3) {
+	private boolean isLineWon(Cell cell1, Cell cell2, Cell cell3) {
 		Cell.State state1 = cell1.getState();
 		Cell.State state2 = cell2.getState();
 		Cell.State state3 = cell3.getState();

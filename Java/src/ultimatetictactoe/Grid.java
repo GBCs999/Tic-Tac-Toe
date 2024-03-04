@@ -11,12 +11,12 @@ import java.util.EnumMap;
 public class Grid extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private static Subgrid[][] subgrids;
-	private static final EnumMap<Subgrid.State, State> STATE_MAP = new EnumMap<>(Subgrid.State.class) {
+	private static final EnumMap<Subgrid.State, Grid.State> STATE_MAP = new EnumMap<>(Subgrid.State.class) {
 		private static final long serialVersionUID = 1L;
 		{
-			put(Subgrid.State.CROSS, State.CROSS);
-		    put(Subgrid.State.CIRCLE, State.CIRCLE);
-		    put(Subgrid.State.EMPTY, State.EMPTY);
+			put(Subgrid.State.CROSS, Grid.State.CROSS);
+		    put(Subgrid.State.CIRCLE, Grid.State.CIRCLE);
+		    put(Subgrid.State.EMPTY, Grid.State.EMPTY);
 		}
 	};
 	
@@ -65,21 +65,21 @@ public class Grid extends JPanel {
 	public State checkWinner() {
 		// Check horizontal lines
 		for (int row = 0; row < Game.GRID_SIZE; row++) {
-			if (checkLine(subgrids[row][0], subgrids[row][1], subgrids[row][2])) {
+			if (isLineWon(subgrids[row][0], subgrids[row][1], subgrids[row][2])) {
 				return STATE_MAP.get(subgrids[row][0].getState());
 			}
 		}
 
 		// Check vertical lines
 		for (int col = 0; col < Game.GRID_SIZE; col++) {
-			if (checkLine(subgrids[0][col], subgrids[1][col], subgrids[2][col])) {
+			if (isLineWon(subgrids[0][col], subgrids[1][col], subgrids[2][col])) {
 				return STATE_MAP.get(subgrids[0][col].getState());
 			}
 		}
 
 		// Check diagonal lines
-		if (checkLine(subgrids[0][0], subgrids[1][1], subgrids[2][2]) ||
-			checkLine(subgrids[0][2], subgrids[1][1], subgrids[2][0])) {
+		if (isLineWon(subgrids[0][0], subgrids[1][1], subgrids[2][2]) ||
+			isLineWon(subgrids[0][2], subgrids[1][1], subgrids[2][0])) {
 			return STATE_MAP.get(subgrids[1][1].getState());
 		}
 
@@ -100,7 +100,7 @@ public class Grid extends JPanel {
 	 * @param subgrid3
 	 * @return If neither states are empty, and all 3 are the same.
 	 */
-	private boolean checkLine(Subgrid subgrid1, Subgrid subgrid2, Subgrid subgrid3) {
+	private boolean isLineWon(Subgrid subgrid1, Subgrid subgrid2, Subgrid subgrid3) {
 		Subgrid.State state1 = subgrid1.getState();
 		Subgrid.State state2 = subgrid2.getState();
 		Subgrid.State state3 = subgrid3.getState();
@@ -117,7 +117,7 @@ public class Grid extends JPanel {
 		for (int i = 0; i < Game.GRID_SIZE; i++) {
 			for (int j = 0; j < Game.GRID_SIZE; j++) {
 				if (subgrids[i][j].getState() == Subgrid.State.EMPTY) {
-					return false; // If any subgrid is empty, game is not tied
+					return false; // If any subgrid is empty, the game is not tied
 				}
 			}
 		}

@@ -20,9 +20,6 @@ public class Cell extends JButton {
 	private static final int FONT_SIZE = 30;
 	private static final int BORDER_WIDTH = 1;
 	
-	public int row;
-	public int col;
-	
 	/**
 	 * Represents the possible states of a cell.
 	 */
@@ -38,7 +35,7 @@ public class Cell extends JButton {
 
 		private final String sign;
 
-		Sign(String sign) {
+		private Sign(String sign) {
 			this.sign = sign;
 		}
 		
@@ -49,6 +46,8 @@ public class Cell extends JButton {
 	
 	private State state;
 	private Sign sign;
+	private int row;
+	private int col;
 	
 	/**
      * Initializes the cell with the specified row and column indices.
@@ -98,12 +97,28 @@ public class Cell extends JButton {
 		return state;
 	}
 	
-	public void setState(State newState) {
-		state = newState;
+	public void setState(State state) {
+		this.state = state;
 	}
 	
 	public String getSign() {
 		return sign.get();
+	}
+	
+	public int getRow() {
+		return row;
+	}
+	
+	public void setRow(int row) {
+		this.row = row;
+	}
+	
+	public int getCol() {
+		return col;
+	}
+	
+	public void setCol(int col) {
+		this.col = col;
 	}
 	
 	/**
@@ -142,7 +157,7 @@ public class Cell extends JButton {
 			Game.roundLabel.setText("Round: " + (Game.round + 1));
 			updateCellState();
 			
-			Game.prevStep = new Step(currentSubgrid.row, currentSubgrid.col, row, col);
+			Game.prevStep = new Step(currentSubgrid.getRow(), currentSubgrid.getCol(), this.row, this.col);
 			Game.prevStepLabel.setText("Previous Step: " + Game.prevStep.formatPrevStep());
 			
 			// Get the next turn's sign
@@ -168,7 +183,7 @@ public class Cell extends JButton {
 				for (int j = 0; j < Game.GRID_SIZE; j++) {
 					Subgrid subgrid = Game.grid.getSubgrid(i, j);
 					
-					if (i == Game.prevStep.row && j == Game.prevStep.col) {
+					if (i == Game.prevStep.getRow() && j == Game.prevStep.getCol()) {
 						Game.currentStep = new Step(i, j);
 						
 						// Check if a step is made into a played subgrid
