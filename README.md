@@ -1,9 +1,9 @@
 # Ultimate Tic-Tac-Toe
 
-Az alábbi repo-ban az Ultimate Tic-Tac-Toe játék megvalósítása található több programozási nyelven.
+In this repository, you can find implementations of the Ultimate Tic-Tac-Toe game in multiple programming languages.
 
 ## C - Gulyás Balázs Csaba
-Konzolról futtatható, az alrácsok számozva vannak és a játékos lépését az azokon belüli számokkal kell megadni.
+Console-based, with the subgrids numbered, where players specify their moves by entering the numbers within those subgrids.
 
 ## Java - Czibik Lóránt Patrik
-Swing asztali applikáció, a játékos lépését valamely cellára kattintással kell megadni a kijelölt alrácsban.
+Swing desktop application, where players specify their moves by clicking on a cell within the highlighted subgrid.
